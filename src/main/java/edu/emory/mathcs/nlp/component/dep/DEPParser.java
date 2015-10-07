@@ -56,6 +56,7 @@ public class DEPParser<N extends DEPNode> extends NLPComponent<N,DEPState<N>>
 	@Override
 	protected StringPrediction getModelPrediction(DEPState<N> state, StringVector vector)
 	{
+
 		return models[0].predictBest(vector);
 	}
 

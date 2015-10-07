@@ -76,7 +76,7 @@ public class POSBenchmark
 		map.expand(0.4);
 		
 		// collect training instances
-		StringModel model = new StringModel(new MultinomialWeightVector());
+		StringModel model = new StringModel(new MultinomialWeightVector(), false);
 		POSTagger<POSNode> tagger = new POSTagger<>(model);
 		tagger.setFlag(NLPFlag.TRAIN);
 		tagger.setAmbiguityClassMap(map);

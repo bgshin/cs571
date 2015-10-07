@@ -59,7 +59,7 @@ public class POSDevelop
 		
 		// collect training instances from the training data
 		System.out.println("Collecting training instances.");
-		StringModel model = new StringModel(new MultinomialWeightVector());
+		StringModel model = new StringModel(new MultinomialWeightVector(), false);
 		POSTagger<POSNode> tagger = new POSTagger<>(model);
 		tagger.setFlag(NLPFlag.TRAIN);
 		tagger.setAmbiguityClassMap(ambi);

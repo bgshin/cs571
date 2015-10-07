@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 
+import edu.emory.mathcs.nlp.common.util.BinUtils;
+import edu.emory.mathcs.nlp.deeplearning.network.FeedForwardNeuralNetwork;
 import edu.emory.mathcs.nlp.learn.util.Instance;
 import edu.emory.mathcs.nlp.learn.util.Prediction;
 import edu.emory.mathcs.nlp.learn.util.StringInstance;
@@ -44,13 +46,18 @@ public class StringModel implements Serializable
 	private FeatureMap            feature_map;
 	private WeightVector          weight_vector;
 	private float                 bias;
+	private boolean               is_nn;
+	private FeedForwardNeuralNetwork nn;
 	
-	public StringModel(WeightVector vector)
+	public StringModel(WeightVector vector,  boolean _is_nn)
 	{
+		BinUtils.LOG.info("new StringModel");
 		instance_deque = new ArrayDeque<>();
 		label_map      = new LabelMap();
 		feature_map    = new FeatureMap();
 		weight_vector  = vector;
+		is_nn = _is_nn;
+		nn=null;
 	}
 	
 	public float getBias()
@@ -61,6 +68,18 @@ public class StringModel implements Serializable
 	public void setBias(float bias)
 	{
 		this.bias = bias;
+	}
+
+	public void setNN(FeedForwardNeuralNetwork _nn)
+	{
+		BinUtils.LOG.info("setNN");
+		this.nn = _nn;
+	}
+
+	public FeedForwardNeuralNetwork getNN()
+	{
+		BinUtils.LOG.info("getNN");
+		return this.nn;
 	}
 	
 	public void addInstance(StringInstance instance)
@@ -153,7 +172,9 @@ public class StringModel implements Serializable
 	
 	public StringPrediction predictBest(StringVector x)
 	{
-		Prediction p = weight_vector.predictBest(toSparseVector(x));
+		Prediction p;
+		p = isNN() ? this.nn.predictBest(toSparseVector(x)) : weight_vector.predictBest(toSparseVector(x));
+
 		return new StringPrediction(label_map.getLabel(p.getLabel()), p.getScore());
 	}
 	
@@ -164,7 +185,16 @@ public class StringModel implements Serializable
 		build.append("- # of instances: "+instance_list.size()+"\n");
 		build.append("- # of labels   : "+label_map.size()+"\n");
 		build.append("- # of features : "+feature_map.size());
+		if (isNN())
+			build.append("- NN\n");
+		else
+			build.append("- Optimizer\n");
 		
 		return build.toString();
 	}
+
+	public boolean isNN() { return is_nn;}
+
+	public int getFeatureMapSize() {return feature_map.size();}
+	public int getLabelMapSize() {return label_map.size();}
 }

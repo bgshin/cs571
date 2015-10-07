@@ -44,7 +44,13 @@ public interface ConfigXML
 
 //	========================== TRAINER ==========================
 
+
+	String IS_NN    		= "is_nn";
+	String ACTIVATION_CUBE	= "activation_cube";
+
 	String OPTIMIZER		= "optimizer";
+	String NEURAL_OPTIMIZER	= "neural_optimizer";
+
 	String AGGREGATE		= "aggregate";
 	
 	String ALGORITHM		= "algorithm";
@@ -63,6 +69,10 @@ public interface ConfigXML
 	String MAX_TOLERANCE	= "max_tolerance";
 	String LOSS_TYPE		= "loss_type";
 	String THREAD_SIZE		= "thread_size";
+
+//	========================== DEEP_LEARNING ==========================
+	String HIDDEN_SIZE		= "hidden_size";
+
 	
 //	========================== ALGORITHMS ==========================
 	
@@ -71,4 +81,5 @@ public interface ConfigXML
 	String ADAGRAD_MINI_BATCH	= "adagrad-mini-batch";
 	String ADADELTA_MINI_BATCH	= "adadelta-mini-batch";
 	String LIBLINEAR_L2_SVC		= "liblinear-l2-svc";
+	String NEURAL_NETWORK		= "neural";
 }

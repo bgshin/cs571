@@ -59,9 +59,9 @@ public class DEPTrain extends NLPTrain<DEPNode,DEPState<DEPNode>>
 	}
 	
 	@Override
-	protected NLPComponent<DEPNode,DEPState<DEPNode>> createComponent()
+	protected NLPComponent<DEPNode,DEPState<DEPNode>> createComponent(boolean is_nn)
 	{
-		return new DEPParser<>(new StringModel(new MultinomialWeightVector()));
+		return new DEPParser<>(new StringModel(new MultinomialWeightVector(), is_nn));
 	}
 	
 	@Override

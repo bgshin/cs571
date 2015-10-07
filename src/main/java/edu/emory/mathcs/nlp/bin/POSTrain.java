@@ -60,9 +60,9 @@ public class POSTrain extends NLPTrain<POSNode,POSState<POSNode>>
 	}
 	
 	@Override
-	protected NLPComponent<POSNode,POSState<POSNode>> createComponent()
+	protected NLPComponent<POSNode,POSState<POSNode>> createComponent(boolean _is_nn)
 	{
-		return new POSTagger<>(new StringModel(new MultinomialWeightVector()));
+		return new POSTagger<>(new StringModel(new MultinomialWeightVector(), _is_nn));
 	}
 	
 	@Override

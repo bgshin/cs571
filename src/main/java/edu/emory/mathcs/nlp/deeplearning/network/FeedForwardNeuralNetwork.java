@@ -23,6 +23,7 @@ import edu.emory.mathcs.nlp.common.random.XORShiftRandom;
 import edu.emory.mathcs.nlp.common.util.DSUtils;
 import edu.emory.mathcs.nlp.common.util.MathUtils;
 import edu.emory.mathcs.nlp.deeplearning.activation.ActivationFunction;
+import edu.emory.mathcs.nlp.deeplearning.activation.CubeFunction;
 import edu.emory.mathcs.nlp.deeplearning.activation.SigmoidFunction;
 import edu.emory.mathcs.nlp.learn.util.Instance;
 import edu.emory.mathcs.nlp.learn.util.Prediction;
@@ -35,10 +36,10 @@ import edu.emory.mathcs.nlp.learn.vector.Vector;
 public class FeedForwardNeuralNetwork implements Serializable
 {
 	private static final long serialVersionUID = -6902794736542104875L;
-	private int input_size, output_size, hidden_size;
-	private ActivationFunction activation_function;
-	private double learning_rate;
-	private float[] i2h, h2o;
+	protected int input_size, output_size, hidden_size;
+	protected ActivationFunction activation_function;
+	protected double learning_rate;
+	protected float[] i2h, h2o;
 	
 	/** Calls {@link #init(int, int..., int)}. */
 	public FeedForwardNeuralNetwork(double learningRate, int input, int output, int hidden)
@@ -77,8 +78,8 @@ public class FeedForwardNeuralNetwork implements Serializable
 		double[] output = scoresH2O(hidden);
 		return new double[][]{output, hidden};
 	}
-	
-	private double[] scoresI2H(Vector x, int hiddenSize)
+
+	protected double[] scoresI2H(Vector x, int hiddenSize)
 	{
 		double[] scores = new double[hiddenSize];
 		int l, index;
@@ -91,15 +92,15 @@ public class FeedForwardNeuralNetwork implements Serializable
 				index = p.getIndex() * hiddenSize;
 				
 				for (l=0; l<hiddenSize; l++)
-					scores[l] += i2h[index+l] * p.getValue();	
+					scores[l] += i2h[index+l] * p.getValue();
 			}
 		}
 		
 		activation_function.transform(scores);
 		return scores;
 	}
-	
-	private double[] scoresH2O(double[] hidden)
+
+	protected double[] scoresH2O(double[] hidden)
 	{
 		int l, f, index, hiddenSize = hidden.length;
 		double[] scores = new double[output_size];
@@ -138,8 +139,8 @@ public class FeedForwardNeuralNetwork implements Serializable
 		double[] errors = trainO2H(instance, scores[1], scores[0]);
 		trainH2I(instance.getVector(), errors);
 	}
-	
-	private double[] trainO2H(Instance instance, double[] hidden, double[] output)
+
+	protected double[] trainO2H(Instance instance, double[] hidden, double[] output)
 	{
 		int f, l, y, index, hiddenSize = hidden.length;
 		double[] errors = new double[hiddenSize];  
@@ -160,8 +161,8 @@ public class FeedForwardNeuralNetwork implements Serializable
 		
 		return errors;
 	}
-	
-	private void trainH2I(Vector x, double[] errors)
+
+	protected void trainH2I(Vector x, double[] errors)
 	{
 		int l, index, hiddenSize = errors.length;
 		

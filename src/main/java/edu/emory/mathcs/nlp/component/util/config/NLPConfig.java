@@ -15,6 +15,8 @@
  */
 package edu.emory.mathcs.nlp.component.util.config;
 
+import edu.emory.mathcs.nlp.deeplearning.network.DEPNeuralNetwork;
+import edu.emory.mathcs.nlp.deeplearning.network.FeedForwardNeuralNetwork;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -52,7 +54,13 @@ public abstract class NLPConfig<N> implements ConfigXML
 		xml = XMLUtils.getDocumentElement(in);
 	}
 	
-//	=================================== GETTERS & SETTERS ===================================  
+//	=================================== GETTERS & SETTERS ===================================
+
+	public boolean isNeuralNetwork()
+	{
+		boolean is_nn = XMLUtils.getBooleanTextContentFromFirstElementByTagName(xml, IS_NN);
+		return is_nn;
+	}
 	
 	public Language getLanguage()
 	{
@@ -114,6 +122,34 @@ public abstract class NLPConfig<N> implements ConfigXML
 		
 		return trainers;
 	}
+
+	public FeedForwardNeuralNetwork[] getNeuralNetworks(StringModel[] models)
+	{
+//		Element eOptimizer = XMLUtils.getElementByTagName(xml, OPTIMIZER, 0);
+//		String  algorithm  = XMLUtils.getTextContentFromFirstElementByTagName(eOptimizer, ALGORITHM);
+
+		FeedForwardNeuralNetwork[] nns = new FeedForwardNeuralNetwork[models.length];
+
+		for (int i=0; i<models.length; i++)
+			nns[i] = getNeuralNetwork(models[i], i);
+
+		return nns;
+
+	}
+
+	public FeedForwardNeuralNetwork getNeuralNetwork(StringModel model, int index)
+	{
+		Element eOptimizer = XMLUtils.getElementByTagName(xml, NEURAL_OPTIMIZER, index);
+		String  algorithm  = XMLUtils.getTextContentFromFirstElementByTagName(eOptimizer, ALGORITHM);
+		initOptimizer(eOptimizer, model);
+
+		switch (algorithm)
+		{
+			case NEURAL_NETWORK	    : return getFeedForwardNeuralNetwork(eOptimizer, model);
+			default					: return null;
+		}
+	}
+
 	
 	private Optimizer getOptimizer(StringModel model, int index)
 	{
@@ -124,10 +160,11 @@ public abstract class NLPConfig<N> implements ConfigXML
 		switch (algorithm)
 		{
 		case PERCEPTRON         : return getPerceptron       (eOptimizer, model);
-		case ADAGRAD            : return getAdaGrad          (eOptimizer, model);
-		case ADAGRAD_MINI_BATCH : return getAdaGradMiniBatch (eOptimizer, model);
+		case ADAGRAD            : return getAdaGrad(eOptimizer, model);
+		case ADAGRAD_MINI_BATCH : return getAdaGradMiniBatch(eOptimizer, model);
 		case ADADELTA_MINI_BATCH: return getAdaDeltaMiniBatch(eOptimizer, model);
-		case LIBLINEAR_L2_SVC   : return getLiblinearL2SVC   (eOptimizer, model);
+		case LIBLINEAR_L2_SVC   : return getLiblinearL2SVC(eOptimizer, model);
+		case NEURAL_NETWORK		: return null;
 		}
 		
 		throw new IllegalArgumentException(algorithm+" is not a valid algorithm name.");
@@ -147,7 +184,7 @@ public abstract class NLPConfig<N> implements ConfigXML
 	private Perceptron getPerceptron(Element eOptimizer, StringModel model)
 	{
 		boolean average      = XMLUtils.getBooleanTextContentFromFirstElementByTagName(eOptimizer, AVERAGE);
-		double  learningRate = XMLUtils.getDoubleTextContentFromFirstElementByTagName (eOptimizer, LEARNING_RATE);
+		double  learningRate = XMLUtils.getDoubleTextContentFromFirstElementByTagName(eOptimizer, LEARNING_RATE);
 		
 		return new Perceptron(model.getWeightVector(), average, learningRate);
 	}
@@ -173,7 +210,7 @@ public abstract class NLPConfig<N> implements ConfigXML
 	{
 		double  batchRatio   = XMLUtils.getDoubleTextContentFromFirstElementByTagName (eOptimizer, BATCH_RATIO);
 		boolean average      = XMLUtils.getBooleanTextContentFromFirstElementByTagName(eOptimizer, AVERAGE);
-		double  learningRate = XMLUtils.getDoubleTextContentFromFirstElementByTagName (eOptimizer, LEARNING_RATE);
+		double  learningRate = XMLUtils.getDoubleTextContentFromFirstElementByTagName(eOptimizer, LEARNING_RATE);
 		double  decayingRate = XMLUtils.getDoubleTextContentFromFirstElementByTagName (eOptimizer, DECAYING_RATE);
 
 		return new AdaDeltaMiniBatch(model.getWeightVector(), batchRatio, average, learningRate, decayingRate);
@@ -182,10 +219,24 @@ public abstract class NLPConfig<N> implements ConfigXML
 	private LiblinearL2SVC getLiblinearL2SVC(Element eOptimizer, StringModel model)
 	{
 		int    threadSize = XMLUtils.getIntegerTextContentFromFirstElementByTagName(eOptimizer, THREAD_SIZE);
-		String lossType   = XMLUtils.getTextContentFromFirstElementByTagName       (eOptimizer, LOSS_TYPE);
+		String lossType   = XMLUtils.getTextContentFromFirstElementByTagName(eOptimizer, LOSS_TYPE);
 		double cost       = XMLUtils.getDoubleTextContentFromFirstElementByTagName (eOptimizer, COST);
 		double tolerance  = XMLUtils.getDoubleTextContentFromFirstElementByTagName (eOptimizer, TOLERANCE_DELTA);
 		
 		return new LiblinearL2SVC(model.getWeightVector(), threadSize, lossType, cost, tolerance);
+	}
+
+
+	private FeedForwardNeuralNetwork getFeedForwardNeuralNetwork(Element eOptimizer, StringModel model)
+	{
+		double learningRate  = XMLUtils.getDoubleTextContentFromFirstElementByTagName(eOptimizer, LEARNING_RATE);
+		int hidden = XMLUtils.getIntegerTextContentFromFirstElementByTagName(eOptimizer, HIDDEN_SIZE);
+		boolean is_cube = XMLUtils.getBooleanTextContentFromFirstElementByTagName(eOptimizer, ACTIVATION_CUBE);
+
+		int input  = model.getFeatureMapSize();
+		int output = model.getLabelMapSize();
+
+
+		return new DEPNeuralNetwork(learningRate, input, output, hidden, is_cube);
 	}
 }

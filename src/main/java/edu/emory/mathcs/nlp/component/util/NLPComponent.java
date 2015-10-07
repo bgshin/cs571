@@ -23,6 +23,7 @@ import java.io.Serializable;
 import edu.emory.mathcs.nlp.component.util.eval.Eval;
 import edu.emory.mathcs.nlp.component.util.feature.FeatureTemplate;
 import edu.emory.mathcs.nlp.component.util.state.NLPState;
+import edu.emory.mathcs.nlp.deeplearning.network.FeedForwardNeuralNetwork;
 import edu.emory.mathcs.nlp.learn.model.StringModel;
 import edu.emory.mathcs.nlp.learn.util.StringPrediction;
 import edu.emory.mathcs.nlp.learn.vector.StringVector;
@@ -37,14 +38,24 @@ public abstract class NLPComponent<N,S extends NLPState<N>> implements Serializa
 	protected StringModel[] models;
 	protected NLPFlag flag;
 	protected Eval eval;
+
+	protected FeedForwardNeuralNetwork[] nns;
+	protected ModelType model_type;
 	
 //	============================== CONSTRUCTORS ==============================
 	
 	public NLPComponent(StringModel[] models)
 	{
+		if (models[0].isNN()) {
+			model_type = ModelType.NEURAL;
+		}
+		else {
+			model_type = ModelType.OPTIMIZER;
+		}
 		setModels(models);
 	}
-	
+
+
 //	============================== SERIALIZATION ==============================
 	
 	@SuppressWarnings("unchecked")
@@ -52,6 +63,7 @@ public abstract class NLPComponent<N,S extends NLPState<N>> implements Serializa
 	{
 		feature_template = (FeatureTemplate<N,S>)in.readObject();
 		models = (StringModel[])in.readObject();
+		nns = (FeedForwardNeuralNetwork[])in.readObject();
 		readLexicons(in);
 	}
 	
@@ -59,6 +71,7 @@ public abstract class NLPComponent<N,S extends NLPState<N>> implements Serializa
 	{
 		out.writeObject(feature_template);
 		out.writeObject(models);
+		out.writeObject(nns);
 		writeLexicons(out);
 	}
 	
@@ -71,10 +84,20 @@ public abstract class NLPComponent<N,S extends NLPState<N>> implements Serializa
 	{
 		return models;
 	}
+
+	public FeedForwardNeuralNetwork[] getNns()
+	{
+		return nns;
+	}
 	
 	public void setModels(StringModel[] model)
 	{
 		this.models = model;
+	}
+
+	public void setNNs(FeedForwardNeuralNetwork[] nns)
+	{
+		this.nns= nns;
 	}
 	
 //	============================== FEATURE ==============================

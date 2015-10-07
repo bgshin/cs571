@@ -20,6 +20,8 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.function.Consumer;
 
+import edu.emory.mathcs.nlp.component.dep.DEPEval;
+import edu.emory.mathcs.nlp.deeplearning.network.FeedForwardNeuralNetwork;
 import org.kohsuke.args4j.Option;
 
 import edu.emory.mathcs.nlp.common.util.BinUtils;
@@ -68,16 +70,22 @@ public abstract class NLPTrain<N,S extends NLPState<N>>
 	public abstract void collect(TSVReader<N> reader, List<String> inputFiles, NLPComponent<N,S> component, NLPConfig<N> configuration);
 	protected abstract NLPConfig<N> createConfiguration(String filename);
 	protected abstract FeatureTemplate<N,S> createFeatureTemplate();
-	protected abstract NLPComponent<N,S> createComponent();
+	protected abstract NLPComponent<N,S> createComponent(boolean is_nn);
 	protected abstract Eval createEvaluator();
+
+	private  boolean is_nn;
 	
 	public void train()
 	{
-		List<String>      trainFiles    = FileUtils.getFileList(train_path  , train_ext);
+		List<String>      trainFiles    = FileUtils.getFileList(train_path, train_ext);
 		List<String>      developFiles  = FileUtils.getFileList(develop_path, develop_ext);
 		NLPConfig<N>      configuration = createConfiguration(configuration_file);
 		TSVReader<N>      reader        = configuration.getTSVReader();
-		NLPComponent<N,S> component     = createComponent();
+		is_nn = configuration.isNeuralNetwork();
+//		is_nn = false;
+		NLPComponent<N,S> component     = createComponent(is_nn);
+
+
 		
 		component.setFeatureTemplate(createFeatureTemplate());
 		component.setEval(createEvaluator());
@@ -127,23 +135,74 @@ public abstract class NLPTrain<N,S extends NLPState<N>>
 	public double train(TSVReader<N> reader, List<String> developFiles, NLPComponent<N,?> component, NLPConfig<N> configuration)
 	{
 		StringModel[] models = component.getModels();
-		Optimizer[] optimizers = configuration.getOptimizers(models);
-		double score = 0;
-		
-		for (int i=0; i<optimizers.length; i++)
-		{
-			BinUtils.LOG.info(optimizers[i].toString()+", bias = "+models[i].getBias()+"\n");
-			BinUtils.LOG.info(models[i].trainInfo()+"\n");
-			
-			if (optimizers[i].getType() == OptimizerType.ONLINE)
-				score = trainOnline(reader, developFiles, component, optimizers[i], models[i]);
-			else
-				score = trainOneVsAll(reader, developFiles, component, optimizers[i], models[i]);
+
+		if (is_nn) {
+			double score = 0;
+			FeedForwardNeuralNetwork[] nns = configuration.getNeuralNetworks(models);
+
+			for (int i=0; i<nns.length; i++)
+			{
+				BinUtils.LOG.info(nns[i].toString()+", bias = "+models[i].getBias()+"\n");
+				BinUtils.LOG.info(models[i].trainInfo()+"\n");
+				models[i].setNN(nns[i]);
+				score = trainNeuralNetwork(reader, developFiles, component, nns[i], models[i]);
+			}
+
+			return score;
 		}
-		
-		return score;
+		else {
+			Optimizer[] optimizers = configuration.getOptimizers(models);
+			double score = 0;
+
+			for (int i=0; i<optimizers.length; i++)
+			{
+				BinUtils.LOG.info(optimizers[i].toString()+", bias = "+models[i].getBias()+"\n");
+				BinUtils.LOG.info(models[i].trainInfo()+"\n");
+
+				if (optimizers[i].getType() == OptimizerType.ONLINE)
+					score = trainOnline(reader, developFiles, component, optimizers[i], models[i]);
+				else
+					score = trainOneVsAll(reader, developFiles, component, optimizers[i], models[i]);
+			}
+
+			return score;
+		}
 	}
-	
+
+
+	protected double trainNeuralNetwork(TSVReader<N> reader, List<String> developFiles, NLPComponent<N,?> component, FeedForwardNeuralNetwork nn, StringModel model)
+	{
+		Eval eval = component.getEval();
+		double prevScore = 0, currScore;
+		float[] prevWeight = null;
+
+		for (int epoch=1; ;epoch++)
+		{
+			eval.clear();
+			nn.train(model.getInstanceList());
+			iterate(reader, developFiles, nodes -> component.process(nodes));
+			currScore = eval.score();
+
+			double uas = ((DEPEval)eval).getUAS();
+			double las = ((DEPEval)eval).getLAS();
+
+			if (prevScore < currScore)
+			{
+				prevScore  = currScore;
+				prevWeight = model.getWeightVector().toArray().clone();
+			}
+			else
+			{
+				model.getWeightVector().fromArray(prevWeight);
+				break;
+			}
+
+			BinUtils.LOG.info(String.format("[nn] %3d: %5.2f, uas(%5.2f), las(%5.2f)\n", epoch, currScore, uas, las));
+		}
+
+		return prevScore;
+	}
+
 	/** Called by {@link #train(TSVReader, List, NLPComponent, NLPConfig)}. */
 	protected double trainOnline(TSVReader<N> reader, List<String> developFiles, NLPComponent<N,?> component, Optimizer optimizer, StringModel model)
 	{
@@ -172,7 +231,7 @@ public abstract class NLPTrain<N,S extends NLPState<N>>
 			BinUtils.LOG.info(String.format("%3d: %5.2f\n", epoch, currScore));
 		}
 		
-		return prevScore; 
+		return prevScore;
 	}
 	
 	/** Called by {@link #train(TSVReader, List, NLPComponent, NLPConfig)}. */
