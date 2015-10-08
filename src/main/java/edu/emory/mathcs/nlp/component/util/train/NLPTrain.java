@@ -216,7 +216,10 @@ public abstract class NLPTrain<N,S extends NLPState<N>>
 			optimizer.train(model.getInstanceList());
 			iterate(reader, developFiles, nodes -> component.process(nodes));
 			currScore = eval.score();
-			
+
+			double uas = ((DEPEval)eval).getUAS();
+			double las = ((DEPEval)eval).getLAS();
+
 			if (prevScore < currScore)
 			{
 				prevScore  = currScore;
@@ -227,8 +230,9 @@ public abstract class NLPTrain<N,S extends NLPState<N>>
 				model.getWeightVector().fromArray(prevWeight);
 				break;
 			}
-			
-			BinUtils.LOG.info(String.format("%3d: %5.2f\n", epoch, currScore));
+
+			BinUtils.LOG.info(String.format("[opti] %3d: %5.2f, uas(%5.2f), las(%5.2f)\n", epoch, currScore, uas, las));
+			// BinUtils.LOG.info(String.format("%3d: %5.2f\n", epoch, currScore));
 		}
 		
 		return prevScore;

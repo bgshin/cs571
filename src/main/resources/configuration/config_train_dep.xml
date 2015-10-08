@@ -4,7 +4,7 @@
 
     <is_nn>true</is_nn>
 
-    <!--<is_nn>false</is_nn>-->
+    <!-- <is_nn>false</is_nn> -->
 
 	<tsv>
         <column index="1" field="form"/>
@@ -34,8 +34,9 @@
         <average>false</average>
         <learning_rate>0.04</learning_rate>
         <bias>0</bias>
-        <hidden_size>20</hidden_size>
+        <hidden_size>1000</hidden_size>
         <activation_cube>true</activation_cube>
+	<!-- <activation_cube>false</activation_cube> -->
     </neural_optimizer>
     
 	<aggregate tolerance_delta="0.01" max_tolerance="5"/>

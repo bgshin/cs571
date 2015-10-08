@@ -1,4 +1,10 @@
 #!/bin/bash
+#SBATCH --time=08:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=40000
+#SBATCH --nodes=1
+#SBATCH --output cube1000b.txt
 
 JAR1='/home/bgshin/works/cs571/target/corenlp-1.0.0-SNAPSHOT.jar'
 JAR2='/home/bgshin/.m2/repository/edu/emory/mathcs/nlp/common/1.0.0-SNAPSHOT/common-1.0.0-SNAPSHOT.jar'
@@ -10,16 +16,16 @@ JAR7='/home/bgshin/.m2/repository/org/apache/commons/commons-math3/3.5/commons-m
 JAR8='/home/bgshin/.m2/repository/org/magicwerk/brownies-collections/0.9.10/brownies-collections-0.9.10.jar'
 #---------------------------------#
 RUN='edu.emory.mathcs.nlp.bin.DEPTrain'
-ARG='-c src/main/resources/configuration/config_train_dep.xml -t src/main/resources/dat/wsj-dep/trn -d src/main/resources/dat/wsj-dep/dev -te dep -de dep'
+ARG='-c src/main/resources/configuration/config_train_dep.xml -t src/main/resources/dat/wsj-dep/trn -d src/main/resources/dat/wsj-dep/dev -te dep -de dep -f 100'
 
 
 # mvn clean install compile
 
 echo '=====================[new features]============================='
 # javac -cp ./src/main/java/:.:$JAR7:$JAR1:$JAR2:$JAR3:$JAR4:$JAR5:$JAR6 ./src/main/java/edu/emory/mathcs/nlp/bin/DEPTrain.java
-# java -Xmx16000m -cp $JAR7:$JAR1:$JAR2:$JAR3:$JAR4:$JAR5:$JAR6:$JAR8 $RUN $ARG 
+# java -Xmx32000m -cp $JAR7:$JAR1:$JAR2:$JAR3:$JAR4:$JAR5:$JAR6:$JAR8 $RUN $ARG 
 
-
+mvn compile
 mvn exec:java -Dexec.mainClass="edu.emory.mathcs.nlp.bin.DEPTrain" -Dexec.args="$ARG"
 
 
