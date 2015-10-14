@@ -37,6 +37,7 @@ public class NERNode extends POSNode
 	public NERNode(int id, String form, String lemma, String posTag, FeatMap feats, String namedEntityTag)
 	{
 		super(id, form, lemma, posTag, feats);
+		setNamedEntityTag(namedEntityTag);
 	}
 	
 //	============================== POS TAG ==============================
