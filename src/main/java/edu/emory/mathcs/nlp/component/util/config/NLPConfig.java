@@ -25,6 +25,7 @@ import java.io.InputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import edu.emory.mathcs.nlp.common.util.BinUtils;
 import edu.emory.mathcs.nlp.common.util.Language;
 import edu.emory.mathcs.nlp.common.util.XMLUtils;
 import edu.emory.mathcs.nlp.component.util.reader.TSVIndex;
@@ -236,7 +237,11 @@ public abstract class NLPConfig<N> implements ConfigXML
 		int input  = model.getFeatureMapSize();
 		int output = model.getLabelMapSize();
 
-
+		if (is_cube)
+		    BinUtils.LOG.info("[cube] hidden = "+hidden +" \n");
+		else
+		    BinUtils.LOG.info("[sig] hidden = "+hidden +" \n");
+		
 		return new DEPNeuralNetwork(learningRate, input, output, hidden, is_cube);
 	}
 }
