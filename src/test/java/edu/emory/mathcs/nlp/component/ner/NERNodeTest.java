@@ -20,14 +20,6 @@ public class NERNodeTest {
 
         FeatMap m =new FeatMap();
 
-        for (int i=0; i<9; i++) {
-            sys[i] = new NERNode(i,"AAA", "aaa", "NNP", m, "");
-            gold[i] = new NERNode(i,"AAA", "aaa", "NNP", m, "");
-        }
-        sys[9] = new NERNode(9,"AAA", "aaa", "NNP", m, "");
-        sys[10] = new NERNode(10,"AAA", "aaa", "NNP", m, "");
-
-
         gold[0] = new NERNode(0,"AAA1 BBB1", "aaa1 bbb1", "NNP", m, "Person");
         gold[1] = new NERNode(1,"AAA2", "aaa2", "NNP", m, "");
         gold[2] = new NERNode(2,"AAA3 BBB2", "aaa3 bbb2", "NNP", m, "Company");
@@ -35,21 +27,21 @@ public class NERNodeTest {
         gold[4] = new NERNode(4,"AAA5", "aaa5", "NNP", m, "");
         gold[5] = new NERNode(5,"AAA6", "aaa6", "NNP", m, "");
         gold[6] = new NERNode(6,"AAA7", "aaa7", "NNP", m, "");
-        gold[7] = new NERNode(7,"AAA8", "aaa8", "NNP", m, "Location");
+        gold[7] = new NERNode(7,"AAA8 BBB3", "aaa8 bbb3", "NNP", m, "Location");
         gold[8] = new NERNode(8,"AAA9", "aaa9", "NNP", m, "");
 
 
         sys[0] = new NERNode(0,"AAA1 BBB1", "aaa1 bbb1", "NNP", m, "Person");
         sys[1] = new NERNode(1,"AAA2", "aaa2", "NNP", m, "Person");
         sys[2] = new NERNode(2,"AAA3", "aaa3", "NNP", m, "Company");
-        sys[3] = new NERNode(3,"AAA4", "aaa4", "NNP", m, "");
-        sys[4] = new NERNode(4,"AAA5", "aaa5", "NNP", m, "");
-        sys[5] = new NERNode(5,"AAA6", "aaa6", "NNP", m, "");
-        sys[6] = new NERNode(6,"AAA7", "aaa7", "NNP", m, "");
-        sys[7] = new NERNode(7,"AAA8", "aaa8", "NNP", m, "");
-        sys[8] = new NERNode(8,"AAA9", "aaa9", "NNP", m, "Location");
-        sys[9] = new NERNode(9,"AAA10", "aaa10", "NNP", m, "");
-        sys[10] = new NERNode(10,"AAA11", "aaa11", "NNP", m, "");
+        sys[3] = new NERNode(3,"BBB2", "bbb2", "NNP", m, "");
+        sys[4] = new NERNode(4,"AAA4", "aaa4", "NNP", m, "");
+        sys[5] = new NERNode(5,"AAA5", "aaa5", "NNP", m, "");
+        sys[6] = new NERNode(6,"AAA6", "aaa6", "NNP", m, "");
+        sys[7] = new NERNode(7,"AAA7", "aaa7", "NNP", m, "");
+        sys[8] = new NERNode(8,"AAA8", "aaa8", "NNP", m, "");
+        sys[9] = new NERNode(9,"BBB3", "bbb3", "NNP", m, "");
+        sys[10] = new NERNode(10,"AAA9", "aaa9", "NNP", m, "Location");
 
         System.out.println(isSame(gold[0], sys[0]));
         assertEquals(getF1(gold, sys), 0.14285714285714288, 0.00000001);
